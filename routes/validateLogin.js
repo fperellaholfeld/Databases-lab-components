@@ -30,7 +30,7 @@ async function validateLogin(req) {
       // TODO: Check if userId and password match some customer account.
       // If so, set authenticatedUser to be the username.
       let sqlPass =
-        "USE tempdb; SELECT password FROM customer WHERE userid=@username AND password=@password";
+        "USE tempdb; SELECT * FROM customer WHERE userid=@username AND password=@password";
 
       let results = await pool
         .request()
@@ -38,11 +38,12 @@ async function validateLogin(req) {
         .input("password", sql.VarChar, password)
         .query(sqlPass);
       console.dir(results);
-      if (results.recordset[0]) {
+      if (results.recordset.length > 0) {
         req.session.authenticatedUser = username;
         return true;
       } else {
-        req.session.loginMessage = "Invalid Login Credentials";
+        req.session.loginMessage =
+          "Could not validate username and password with our system! Please return and try again.";
         return false;
       }
     } catch (err) {
