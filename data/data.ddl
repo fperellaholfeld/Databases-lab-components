@@ -137,32 +137,55 @@ CREATE TABLE review (
         ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+
+
+
+
+CREATE TRIGGER emailInUse ON customer
+AFTER INSERT AS
+BEGIN
+    DECLARE @newEmail VARCHAR
+    SELECT @newEmail = INSERTED.email FROM INSERTED
+    IF EXISTS ( SELECT email FROM customer WHERE email = @newEmail )
+    BEGIN
+        PRINT('The email entered already has an account')
+        END 
+        ELSE 
+        BEGIN
+        INSERT INTO customer(email) VALUES (@newEmail)
+        PRINT('email successful')
+    END
+END
+
+
+
+INSERT INTO category(categoryName) VALUES ('WHY');
 INSERT INTO category(categoryName) VALUES ('BIOL');
 INSERT INTO category(categoryName) VALUES ('MATH');
 INSERT INTO category(categoryName) VALUES ('APSC');
 INSERT INTO category(categoryName) VALUES ('POLI');
 INSERT INTO category(categoryName) VALUES ('WRLD');
-INSERT INTO category(categoryName) VALUES ('Seafood');
-INSERT INTO category(categoryName) VALUES ('Confections');
-INSERT INTO category(categoryName) VALUES ('Grains/Cereals');
+INSERT INTO category(categoryName) VALUES ('COSC');
+
+
 
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Boston Cream Biology', 1, '400 pages',140.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Banana Biology',1,'325 pages - Vegan',125.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Cold Brew Calculus',2,'600 pages',250.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Devil''s Food Dynamics',3,'350 pages',140.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Java Chip Java',4,'150 pages - Gluten Free',200.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Java Chip Java',6,'150 pages - Gluten Free',200.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Mojito Math',2,'275 pages',150.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Peanut Butter PoliSci',5,'450 pages',185.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Watermelon World Religion',6,'100 pages - Vegetarian',85.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Peanut Butter PoliSci',4,'450 pages',185.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Watermelon World Religion',5,'100 pages - Vegetarian',85.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Mint Micro-Biology',1,'315 pages',100.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Ice Tea Integrals',2,'250 pages - Just add to water!', 195.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Matcha Mechanics',3,'500 pages', 250.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Mango Machining',3,'475 pages - Sugar Free', 215.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Peanut Butter Python',4,'285 pages', 145.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Citrus C++',4,'125 pages', 110.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Coconut Canadian Law',5,'195 pages',95.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Guava Global Governments',5,'210 pages',115.00);
-INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('White Chocolate World Performance',6,'75 pages',45.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Peanut Butter Python',6,'285 pages', 145.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Citrus C++',6,'125 pages', 110.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Coconut Canadian Law',4,'195 pages',95.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Guava Global Governments',4,'210 pages',115.00);
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('White Chocolate World Performance',5,'75 pages',45.00);
 
 INSERT INTO warehouse(warehouseName) VALUES ('Main warehouse');
 INSERT INTO productInventory(productId, warehouseId, quantity, price) VALUES (1, 1, 5, 140);
@@ -182,6 +205,8 @@ INSERT INTO customer (firstName, lastName, email, phonenum, address, city, state
 INSERT INTO customer (firstName, lastName, email, phonenum, address, city, state, postalCode, country, userid, password) VALUES ('Darren', 'Doe', 'oe@doe.com', '250-807-2222', '444 Dover Lane', 'Kelowna', 'BC', 'V1V 2X9', 'Canada', 'darren' , 'pw');
 INSERT INTO customer (firstName, lastName, email, phonenum, address, city, state, postalCode, country, userid, password) VALUES ('Elizabeth', 'Elliott', 'engel@uiowa.edu', '555-666-7777', '555 Everwood Street', 'Iowa City', 'IA', '52241', 'United States', 'beth' , 'test');
 
+
+
 -- Order 1 can be shipped as have enough inventory
 DECLARE @orderId int
 INSERT INTO ordersummary (customerId, orderDate, totalAmount) VALUES (1, '2019-10-15 10:25:55', 735)
@@ -191,9 +216,9 @@ INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId,
 INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 10, 1, 195);
 
 DECLARE @orderId int
-INSERT INTO ordersummary (customerId, orderDate, totalAmount) VALUES (2, '2019-10-16 18:00:00', 1000.00)
+INSERT INTO ordersummary (customerId, orderDate, totalAmount) VALUES (2, '2019-10-16 18:00:00', 750.00)
 SELECT @orderId = @@IDENTITY
-INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 5, 5, 200);
+INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 6, 2, 150);
 
 -- Order 3 cannot be shipped as do not have enough inventory for item 7
 DECLARE @orderId int
@@ -203,7 +228,7 @@ INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId,
 INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 7, 3, 185);
 
 DECLARE @orderId int
-INSERT INTO ordersummary (customerId, orderDate, totalAmount) VALUES (2, '2019-10-17 05:45:11', 2060)
+INSERT INTO ordersummary (customerId, orderDate, totalAmount) VALUES (4, '2019-10-17 05:45:11', 2060)
 SELECT @orderId = @@IDENTITY
 INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 3, 4, 250)
 INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 8, 3, 85)
@@ -217,6 +242,8 @@ SELECT @orderId = @@IDENTITY
 INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 5, 4, 200)
 INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 17, 2, 45)
 INSERT INTO orderproduct (orderId, productId, quantity, price) VALUES (@orderId, 3, 3, 250);
+
+
 
 -- New SQL DDL for lab 8
 UPDATE Product SET productImageURL = 'img/1.jpg' WHERE productId = 1;

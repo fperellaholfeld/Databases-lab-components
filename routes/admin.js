@@ -24,9 +24,32 @@ router.get('/', function(req, res, next) {
 
             res.write("<title>Administrator Page</title>");
             res.write("<h3>Administrator Sales Report by Day</h3>")
+            
 
             let sqlQuery = "select year(orderDate) as year, month(orderDate) as month, day(orderDate) as day, SUM(totalAmount) as totalSum FROM OrderSummary GROUP BY year(orderDate), month(orderDate), day(orderDate)";
             let result = await pool.request().query(sqlQuery);
+            res.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>')
+            var xValues = []
+            var yValues = []
+            for (let i = 0; i < result.recordset.length; i++) {
+                let record = result.recordset[i];
+                xValues.push(record.year + "/" + record.month + "/" + record.day)
+                yValues.push(record.totalSum.toFixed(2))
+            }
+            res.write(`<script>new Chart("adminChart", {
+                type: "line",
+                data: {
+                  labels:` +  xValues + `,
+                  datasets: [{
+                    backgroundColor: "rgba(0,0,0,1.0)",
+                    borderColor: "rgba(0,0,0,0.1)",
+                    data: ` + yValues + `
+                  }]
+                },
+                
+              }); </script>`)
+            
+            res.write('<canvas id="adminChart" style="width:100%;max-width:700px"></canvas>')
 
             res.write("<table class=\"table\" border=\"1\">");
             res.write("<tr><th>Order Date</th><th>Total Order Amount</th>");

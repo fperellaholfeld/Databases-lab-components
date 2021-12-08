@@ -129,15 +129,159 @@ router.get("/", function (req, res, next) {
             caName +
             "</font></td></tr>"
         );
+        
+      }
+      res.write("</table>");
+
+
+      // Top selling Products - PLACE ON MAIN PAGE SOMEHOW
+      res.write( '</font><h3><font face="Helvetica">' +  "Our Top Selling Products" + "</font></h3>" );
+      let pool2 = await sql.connect(dbConfig);
+      let results2 = false;
+      let sqlQuery2 = "USE tempdb; SELECT product.productId, productName, productPrice FROM orderProduct JOIN Product ON product.productId = orderProduct.productId ORDER BY quantity DESC ;";
+      results2 = await pool2
+      .request()
+      .query(sqlQuery2);
+      res.write(
+        '<table border="1"><tr><th align="left"><font face="Helvetica">Add to Cart</th><th align="left"><font face="Helvetica">Product Id</th><th align="left"><font face="Helvetica">Product Name</th><th align="left"><font face="Helvetica">Product Price</th></tr>'
+      );
+      for (let i = 0; i < results2.recordset.length; i++) {
+        let searchRes = results2.recordset[i];
+        let prodId = searchRes.productId;
+        let prodName = searchRes.productName;
+        let prodPrice = searchRes.productPrice;
+        let color = "black";
+         
+        if(i == 3){
+          break
+        }
+        res.write(
+          "<tr><td>" +
+            '<font face="Helvetica"><a href="addcart?id=' +
+            prodId +
+            "&name=" +
+            prodName +
+            "&price=" +
+            prodPrice +
+            '">Add to Cart</a></font>' +
+            '</td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            prodId +
+            '</font></td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            '<a href="product?id=' +
+            prodId +
+            "&name=" +
+            prodName +
+            "&price=" +
+            prodPrice +
+            '">' +
+            prodName +
+            "</a></font>" +
+            '</font></td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            "$" +
+            prodPrice +
+            '</font></td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            "</font></td></tr>"
+        );
       }
 
       res.write("</table>");
 
-      res.end();
-    } catch (err) {
-      console.dir(err);
-      res.end();
+
+      // Product Recommendations (put up top of page) 
+    let userName = req.session.authenticatedUser;
+     if(userName !=null){
+     res.write( '</font><h3><font face="Helvetica">' +  "Suggestions based on your past purchases " + "</font></h3>" );
+     let pool3 = await sql.connect(dbConfig);
+     let results3 = false;
+     let sqlQuery3 = "USE tempdb; SELECT cat.categoryId FROM orderProduct As orPr, Product AS pr, ordersummary AS orSum, customer AS cust , category AS cat WHERE pr.categoryId = cat.categoryId AND pr.productId = orPr.productId AND orPr.orderId = orSum.orderId AND orSum.customerId = cust.customerId AND cust.userid LIKE " + "'" + userName + "'" + " ORDER BY quantity DESC ;";
+     //let sqlQuery3 = "USE tempdb; SELECT cat.categoryId FROM orderProduct As orPr, Product AS pr, ordersummary AS orSum, customer AS cust , category AS cat WHERE pr.categoryId = cat.categoryId AND pr.productId = orPr.productId AND orPr.orderId = orSum.orderId AND orSum.customerId = cust.customerId AND cust.userid LIKE 'beth' ORDER BY quantity DESC ;"
+
+     results3 = await pool3
+     .request()
+     .query(sqlQuery3);
+     res.write(
+       '<table border="1"><tr><th align="left"><font face="Helvetica">Add to Cart</th><th align="left"><font face="Helvetica">Product Id</th><th align="left"><font face="Helvetica">Product Name</th><th align="left"><font face="Helvetica">Product Price</th></tr>'
+     );
+     for (let i = 0; i < results3.recordset.length; i++) {
+       let searchRes = results3.recordset[i];
+       let catId = searchRes.categoryId;
+       if(i == 1){
+         break
+       }
+        let pool4 = await sql.connect(dbConfig);
+        let results4 = false;
+        let sqlQuery4 =  "USE tempdb; SELECT productId, productName, productPrice, categoryName FROM product JOIN category ON product.categoryId=category.categoryId WHERE category.categoryId LIKE " + catId + ";"
+        results4 = await pool4
+        .request()
+        .query(sqlQuery4);
+
+       for (let i = 0; i < results4.recordset.length; i++) {
+        let searchRes = results4.recordset[i];
+        let prodId = searchRes.productId;
+        let prodName = searchRes.productName;
+        let prodPrice = searchRes.productPrice;
+        let catName = searchRes.categoryName;
+        let color = "black";
+        
+ 
+        res.write(
+          "<tr><td>" +
+            '<font face="Helvetica"><a href="addcart?id=' +
+            prodId +
+            "&name=" +
+            prodName +
+            "&price=" +
+            prodPrice +
+            '">Add to Cart</a></font>' +
+            '</td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            prodId +
+            '</font></td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            '<a href="product?id=' +
+            prodId +
+            "&name=" +
+            prodName +
+            "&price=" +
+            prodPrice +
+            '">' +
+            prodName +
+            "</a></font>" +
+            '</font></td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            "$" +
+            prodPrice +
+            '</font></td><td><font face="Helvetica" color="' +
+            color +
+            '">' +
+            catName +
+            "</font></td></tr>"
+        );
+      }
+       
+     }
     }
+
+     res.write("</table>");
+
+     res.end();
+   } catch (err) {
+     console.dir(err);
+     res.end();
+   }
+
+    
   })();
 });
 
