@@ -8,7 +8,8 @@ router.get('/', function(req, res, next) {
     res.write('<title>Tasty Texts Orders List</title>');
     res.write('<style type=text/css> header {background-color: white; position: static; left: 0; right: 0;  top: 5px;  height: 30px;  display: flex;  align-items: center;  }  header * {  display: inline;  }  header li {  margin: 20px;  }  header li a {  color: blue;  text-decoration: none;  }  </style>');
     res.write('<header><nav><ul><li><a href="/"> Home </a></li><li><a href="/listprod"> Find Products </a></li><li><a href="/showcart"> Your Cart </a></li><li> <a href="/listorder"> Past orders </a></li></ul></nav></header>');
-    res.write('<h1 align="center"><font face="normal" color="#cf0921">Order List</font></h1><hr>');
+    res.write('<h1 align="center"><font face="normal" color="#cf0921">Tasty Texts</font></h1><hr>');
+    res.write("<h1>List of Orders</h1>");
     
     /** Create connection, and validate that it connected successfully **/
     (async function() {
