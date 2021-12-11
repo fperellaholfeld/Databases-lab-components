@@ -28,28 +28,25 @@ router.get('/', function(req, res, next) {
 
             let sqlQuery = "select year(orderDate) as year, month(orderDate) as month, day(orderDate) as day, SUM(totalAmount) as totalSum FROM OrderSummary GROUP BY year(orderDate), month(orderDate), day(orderDate)";
             let result = await pool.request().query(sqlQuery);
-            res.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>')
+            
             var xValues = []
             var yValues = []
             for (let i = 0; i < result.recordset.length; i++) {
                 let record = result.recordset[i];
-                xValues.push(record.year + "/" + record.month + "/" + record.day)
+                xValues.push(new Date(record.year + "-" + record.month + "-" + record.day))
                 yValues.push(record.totalSum.toFixed(2))
             }
-            res.write(`<script>new Chart("adminChart", {
-                type: "line",
-                data: {
-                  labels:` +  xValues + `,
-                  datasets: [{
-                    backgroundColor: "rgba(0,0,0,1.0)",
-                    borderColor: "rgba(0,0,0,0.1)",
-                    data: ` + yValues + `
-                  }]
-                },
-                
-              }); </script>`)
+            //var xValuesStr = '[' + xValues + ']';
+            //var yValuesStr = '[' + yValues.toString() + ']'
+            console.dir(xValues + yValues)
+            //res.write('')
+
+            res.write(`<canvas id="adminChart" style="width:100%;max-width:700px"></canvas><script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.2/dist/chart.min.js"></script> <script> const adminChart = new Chart(ctx, {type: "line",data: {labels:[${xValues}], datasets: [{label: 'Total Revenue ($)', backgroundColor: "rgba(0,0,0,1.0)",borderColor: "rgba(0,0,0,0.1)",data: [${yValues}],}]}, options: {scales: {x: {type: 'time',time: {unit: "quarter"}}}}}) </script>`)
+            console.dir(`<canvas id="adminChart" style="width:100%;max-width:700px"></canvas>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.2/dist/chart.min.js"></script> <script> const ctx = "adminChart";const adminChart = new Chart(ctx, {type: "line",data: {labels:${xValues}, datasets: [{backgroundColor: "rgba(0,0,0,1.0)",borderColor: "rgba(0,0,0,0.1)",data: ${yValues},}]},})`)
             
-            res.write('<canvas id="adminChart" style="width:100%;max-width:700px"></canvas>')
+            
+            //res.render('adminChart', {xValues: xValues, yValues: yValues});
 
             res.write("<table class=\"table\" border=\"1\">");
             res.write("<tr><th>Order Date</th><th>Total Order Amount</th>");
