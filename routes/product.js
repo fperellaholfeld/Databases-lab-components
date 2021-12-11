@@ -22,9 +22,11 @@ router.get("/", function (req, res, next) {
       //DONE: Use prepared Statement For Query
       const prep = new sql.PreparedStatement(pool);
       let sqlQuery =
-        "USE tempdb; SELECT productId, productName, productPrice, productDesc, productImageURL, productImage FROM product ";
-      if (req.query.id && req.query.name && req.query.price)
-        sqlQuery = sqlQuery + "WHERE productId LIKE @prodId";
+       // "USE tempdb; SELECT product.productId, productName, productPrice, productDesc, productImageURL, productImage FROM product ";
+      "USE tempdb; SELECT product.productId, productName, productPrice, productDesc, productImageURL, productImage, reviewRating, reviewDate, reviewComment FROM product LEFT OUTER JOIN review ON product.productId = review.productId ";
+      
+        if (req.query.id && req.query.name && req.query.price)
+        sqlQuery = sqlQuery + "WHERE product.productId LIKE @prodId";
       prep.input("prodId", sql.Int);
       prep.prepare(sqlQuery, (err) => {
         console.dir(err);
@@ -39,6 +41,9 @@ router.get("/", function (req, res, next) {
             let prDesc = searchRes.productDesc;
             let prIMG_URL = searchRes.productImageURL;
             let prIMG_BIN = searchRes.productImage;
+            let revRating = searchRes.reviewRating;
+            let revDate = searchRes.reviewDate;
+            let revComment = searchRes.reviewComment;
             let color = "#943131";
 
             res.write(
@@ -79,6 +84,28 @@ router.get("/", function (req, res, next) {
             if (prIMG_BIN != null) {
               res.write('<img src="displayImage.js?id=' + pId + '">');
             }
+
+            //Review of product
+            if(revComment != null) {
+            res.write(
+              '</font><h3><font face="Helvetica">' 
+              + " Date: " +revDate + " Rating: " + revRating + " Review: " + revComment + "" +
+                "</font></h3>"
+            );
+           }
+
+
+            //Write a review 
+            res.write( '</font><h3><font face="Helvetica">' +  "Write a review of this product:" + "</font></h3>" );
+         // res.write('<form method="post" action="product">');
+           res.write('<input type="text" comment="reviewComment" size="150">');
+           res.write('<input type="submit" value="Submit"><input type="reset" value="Reset">');
+           res.write('</form>');
+
+           
+
+
+
             // DONE: Add links to Add to Cart and Continue Shopping
             res.write(
               '<h2><a href="addcart?id=' +
@@ -109,5 +136,40 @@ router.get("/", function (req, res, next) {
     }
   })();
 });
-
 module.exports = router;
+
+/**
+app.post("/", function(req, res){
+insertReview()
+
+});
+
+function insertReview(){
+
+var dbCon = new sql.Connection(dbConfig);
+dbCon.connect().then(function (){
+  var transaction = new sql.Transaction(dbCon);
+  transaction.begin().then(function (){
+    var request = new sql.Request(transaction);
+    request.query("INSERT INTO review (reviewComment) VALUES (@reviewComment)")
+    .then(function (){
+      transaction.commit().then(function (resp){
+        console.log(resp);
+        dbCon.close();
+      }).catch(function (err) {
+        console.log(err);
+        dbCon.close();
+    });
+}).catch(function (err) {
+  console.log(err);
+    dbCon.close();
+})
+}).catch(function (err) {
+console.log(err);
+dbConn.close();
+}).catch(function (err) {
+console.log(err);
+});
+});
+}
+**/
